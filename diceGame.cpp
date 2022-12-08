@@ -29,7 +29,8 @@ int performRoll(Player player){
 	return die;
 }
 
-//This function checks the number rolled by the dice, if a player rolled a six, they play again. If they roll a six 3 times, their turn is ended //and they don't get to play again.
+//This function checks the number rolled by the dice, if a player rolled a six, they play again. 
+//If they roll a six 3 times, their turn is ended and they don't get to play again.
 void checkRoll(int die, Player player) {
 	int sixTurn = 0;//A control for turns played when a player rolls a six (only 3 allowed)
 
