@@ -1,169 +1,123 @@
-/*
-*CREATED BY: E. KEALEBOGA
-*
-*/
 #include<iostream>
 using namespace std;
 
-int turnScore = 0;/////The score for each game turn
-int totalScoreA = 0;////Total score for player 1
-int totalScoreB = 0;////Total score for player 2
+enum Player { PA, PB };
+int totalScoreA = 0;//Total score for player A
+int totalScoreB = 0;//Total score for player B
 
-////The following function checks how much was rolled by the dice, three parameters, the dice and respective gameturns
-//returns nothing
-void checkRoll(int die, int playerATurn, int playerBTurn) {
-	int sixTurn = 0;//////This integer serves as control for turns played when a player rolls a six
-    char rollAgain = 'r' ;////input character to roll again
-
-beginCheck ://////goto label to check if player has rolled a six again
-
-	/////////////if selection, to check if a player rolled a six
-	if (die == 6) {
-		
-		////Checks if playerA's turn is currently active and if its not the third time they roll
-			if ((playerATurn == 1) && !(sixTurn == 2)) {
-				cout << "You rolled a SIX, roll again!!\n";////prompts player to play again
-				++sixTurn;////increments sixTurn variable
-				turnScore = die;////takes die and puts it in turnScore
-				totalScoreA += turnScore;////increments totalScore by turnScore
-				cout << "Total score: " << totalScoreA << endl;//shows current score
-
-				cin >> rollAgain;////listens for rollagain input
-				die = 1 + (rand() % 6); /////////////////rolls a Die
-
-				goto beginCheck;////returns program to label to check if die is six
-
-			}
-			////Simillar to above selection statement but for playerB
-			else if ((playerBTurn == 1) && !(sixTurn == 2))
-			{
-				cout << "You rolled a SIX, roll again!!\n";
-				++sixTurn;
-				turnScore = die;
-				totalScoreB += turnScore;
-				cout << "Total score: " << totalScoreB << endl;
-
-				cin >> rollAgain;
-				die = 1 + (rand() % 6); /////////////////rolls a Die
-
-				goto beginCheck;
-
-			}//ends else if
-
-			//Checks if Either player (PlayerA or PlayerB) is rolling for the third time and skips their turn
-			//sixTurn==2 is first condition here because its almost always false, hence quicker code
-			else if ((sixTurn == 2) && ((playerBTurn == 1) || (playerATurn == 1)))
-			{
-				cout << "Now you're cheating!\n\n\n\n";
-			}//ends else if
-
-	}//ends if
-
-	/////Alternatives to die = 6 selection statement above, for both players
-	else if ((playerATurn == 1) && !(die == 6))
-	{
-		cout << "You rolled a: " << die;
-		turnScore = die;/////Increments turnscore by die
-		totalScoreA += turnScore;////Increments playerA's total score by turnscore
-		cout << " Your Total Score is: " << totalScoreA << "\n\n\n\n" << endl;//shows player's score
-	}//ends else if
-	else if ((playerBTurn == 1) && (die != 6))
-	{
-		cout << "You rolled a: " << die;
-		turnScore = die;
-		totalScoreB += turnScore;
-		cout << " Your Total Score is: " << totalScoreB << "\n\n\n\n" << endl;
-
-	}//ends else if	
-}
-
-////The following function is responsible for playerA's gameturn, no parameters, returns an integer
-int playerAGameTurn() {
-	char choice;////for checking keyboard inputs
-	int die = 0;//To hold the game tool which shuffles random numbers from 1 to 6
-	int playerATurn = 1;//to be used for player turn control always initializes to 1 when method is called
-
-	while (playerATurn == 1) {//checks if player
-	
-		cout << "Player 1 roll ([R] to roll, [Q] to quit)" << endl;//instructions for player
-		cin >> choice;///////////////////gets the key pressed on keyboard/////////
-		if (choice == 'r') {////checks if the passed in key is for rollng the die
-			die = 1 + (rand() % 6); /////////////////rolls a Die and returns a random number between 1 and 6
-
-    //function checkRoll called and given arguments, playerBTurn here is inactive hence the zero
-	////die is from above statement
-			checkRoll(die, playerATurn, 0);
-
-		//this statement makes sure the while loop terminates and the gameTurn also terminates
-			playerATurn = 0;
-		}//end if
-
-		//Alternative to above if statement
-		else  if (choice == 'q') {//checks if user input is q
-			exit(EXIT_SUCCESS);//terminates the program
-		}//ends if
-	
-	}
-	return totalScoreA;	////returns the player's total score	
-}
-
-////The following function is responsible for playerB's gameturn, its completely simillar to the above function for playerA
-int playerBGameTurn() {
+int performRoll(Player player){
 	char choice;
 	int die = 0;
-	int playerBTurn = 1;
+	char current = player == PA ? 'A' : 'B';
+	cout << "Player "<< current <<"'s turn"<< endl;
+	cout << "Press ([R] to roll or [Q] to quit)" << endl;
 
-	while (playerBTurn == 1) {
-
-		cout << "Player 2 roll ([R] to roll, [Q] to quit)" << endl;
-		cin >> choice;///////////////////gets the key pressed on keyboard/////////
-		if (choice == 'r') {
-			die = 1 + (rand() % 6 ); /////////////////rolls a Die
-
-			checkRoll(die, 0, playerBTurn);
-
-			playerBTurn = 0;
-			}
-			else if (choice == 'q') {
-				exit(EXIT_SUCCESS); /////exits program
-			}
-		} 
-	return totalScoreB;
+	while(true){
+		cin >> choice;//gets the key pressed on keyboard
+		if (choice == 'r' || choice == 'R') {
+			die = 1 + (rand() % 6 ); //Die roll sim
+			break;
+		}
+		else if (choice == 'q' || choice == 'Q') {
+			exit(EXIT_SUCCESS); 
+			break;
+		}
+		else{
+			cout << "Invalid input try again" << endl;
+		}
 	}
+	return die;
+}
+
+//This function checks the number rolled by the dice, if a player rolled a six, they play again. If they roll a six 3 times, their turn is ended //and they don't get to play again.
+void checkRoll(int die, Player player) {
+	int sixTurn = 0;//A control for turns played when a player rolls a six (only 3 allowed)
+
+	beginCheck ://label to check if player has rolled a six again
+
+	//check if a player rolled a six
+	if (die == 6) {
+		cout << "You rolled a SIX, roll again!!\n";
+		++sixTurn;
+			//Check if its playerA's turn is and if its not the third time they roll
+			if ((player ==  PA) && !(sixTurn == 2)) {
+				totalScoreA += die;//increments totalScore
+				cout << "Player A Total score: " << totalScoreA << endl;//shows current score
+
+				die = performRoll(player); 
+
+				goto beginCheck;//returns program to label so we check if die is six
+			}
+			else if ((player  ==  PB) && !(sixTurn == 2)){
+				//for playerB
+				totalScoreB += die;
+				cout << "Player B Total score: " << totalScoreB << endl;
+
+				die = performRoll(player);
+
+				goto beginCheck;
+			}
+			else if (sixTurn == 2)
+			{
+				//Check if Either player (A or B) has rolled  a 6 for the third time and skip their turn
+				cout << "Now you're cheating!\n\n\n";
+			}
+	}
+	else if (die  < 6)
+	{
+		cout << "You rolled a: " << die << endl;
+		if(player == PA) {
+			totalScoreA += die;
+			cout << "Player A Total Score is: " << totalScoreA << endl;
+			cout << "Scores [PA: " << totalScoreA << ", PB: "  << totalScoreB <<"]" << "\n\n" << endl;
+		}else{
+			totalScoreB += die;
+			cout << "Player B Total Score is: " << totalScoreB << endl;
+			cout << "Scores [PA: " << totalScoreA << ", PB: "  << totalScoreB <<"]" << "\n\n" << endl;
+		} 	
+	}
+}
+
+
+//function for a player's gameturn
+void gameTurn(Player player) {
+	int die = performRoll(player);
+	checkRoll(die, player); 
+}
 	
 
 int main(){
 	char mainChoice;//for user input from main menu
+	enum Player player = PA;
 
-	cout << "Welcome to The Dice Game! Please select from the following menu: " << endl;//main menu
-	cout << "Press [p] to play, [q] to quit \n\n";//menu prompts
+	cout << "Welcome to The Dice Game! Please select from the following menu: " << endl;
+	cout << "Press [p] to play, [q] to quit \n\n";
 
-	cin >> mainChoice;//listens for input
+	cin >> mainChoice;
 
-	if (mainChoice == 'p') {//if input is a p
+	if (mainChoice == 'p' || mainChoice == 'P') {
 
-		//game begins until one of the total scores is 100
-		while (totalScoreA < 100 || totalScoreB < 100)
+		//game runs until one of the total scores is 100
+		while (true)
 		{
-			/////////////////////gameturns alternate repeatedly til someone reaches 100 points
-			playerAGameTurn();
-			////Checks if PlayerA won yet 
-			if (totalScoreA == 100) {
-				cout << "CONGRATULATIONS********* PLAYER 1 IS THE WINNER !! *********CONGRATULATIONS\n";
-				exit(EXIT_SUCCESS);/////////////////Exits the appliction
+			//gameturns alternating
+			gameTurn(PA);
+			//Checks if PlayerA won yet 
+			if (totalScoreA >= 100) {
+				cout << "CONGRATULATIONS********* PLAYER A IS THE WINNER !! *********CONGRATULATIONS\n";
+				exit(EXIT_SUCCESS);//Exits the appliction
 			}
 
-			playerBGameTurn();
-			////Checks if PlayerB won yet 
-			if (totalScoreB == 100) {
-				cout << "CONGRATULATIONS********* PLAYER 2 IS THE WINNER !! *********CONGRATULATIONS\n";
-				exit(EXIT_SUCCESS);/////////////////Exits the appliction
+			gameTurn(PB);
+			if (totalScoreB >= 100) {
+				cout << "CONGRATULATIONS********* PLAYER B IS THE WINNER !! *********CONGRATULATIONS\n";
+				exit(EXIT_SUCCESS);
 			}
 		}
 	}
-	else if(mainChoice == 'q')
+	else if(mainChoice == 'q' || mainChoice == 'Q')
 	{
-		exit(EXIT_SUCCESS);/////////////////Exits the appliction
+		exit(EXIT_SUCCESS);
 	}	
 
 }
